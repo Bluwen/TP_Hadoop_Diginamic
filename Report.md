@@ -52,9 +52,51 @@ hdfs dfs -ls target_dir_in_hdfs
 
 # 5. Visualiser les résultats
 
-## 5.1 HBase
+Pour récupéré les résultat et exploiter les données, nous avons plusieurs options:
+* HDFS
+* HBase
 
-### 5.1.1 Interface en ligne de commande (CLI)
+## 5.1 HDFS
+
+### 5.1.1 shell
+
+Après un traitement MapReduce, les résultats sont généralement stockés dans un répertoire HDFS, souvent sous forme de fichiers `part-00000`, `part-00001`, etc.
+
+Pour vérifier leur présence :
+
+```bash
+hdfs dfs -ls target_hdfs_output_dir
+```
+
+Pour lire rapidement le contenu :
+
+```bash
+hdfs dfs -cat target_hdfs_output_dir/part-00000
+```
+
+Pour les extraire en local pour une visualisation avec Pandas ou Matplotlib :
+
+```bash
+hdfs dfs -get target_hdfs_output_dir/part-00000 target_output
+```
+
+### 5.1.2 python (pydoop.hdfs)
+
+Pour lire directement les résultats MapReduce depuis HDFS en Python :
+
+```python
+import pydoop.hdfs as hdfs
+
+with hdfs.open('target_hdfs_output_dir/part-00000') as f:
+    contenu = f.read().decode()
+```
+
+Le contenu peut ensuite être parsé ou converti en DataFrame selon le format attendu.
+
+
+## 5.2 HBase
+
+### 5.2.1 Interface en ligne de commande (CLI)
 
 Pour interroger une table HBase via le CLI, commencez par lancer le shell :
 
@@ -96,7 +138,7 @@ Pour afficher la définition d'une table (colonnes, familles, etc.) :
 describe "nom_de_la_table"
 ```
 
-### 5.1.1 python (happybase)
+### 5.2.1 python (happybase)
 
 Pour interagir avec HBase en Python, on peut utiliser la bibliothèque `happybase`, qui permet de se connecter à HBase via Thrift.
 
@@ -126,42 +168,6 @@ for key, row in table.scan():
 connection.close()
 ```
 
-## 5.2 hdfs
-
-### 5.2.1 shell
-
-Après un traitement MapReduce, les résultats sont généralement stockés dans un répertoire HDFS, souvent sous forme de fichiers `part-00000`, `part-00001`, etc.
-
-Pour vérifier leur présence :
-
-```bash
-hdfs dfs -ls target_hdfs_output_dir
-```
-
-Pour lire rapidement le contenu :
-
-```bash
-hdfs dfs -cat target_hdfs_output_dir/part-00000
-```
-
-Pour les extraire en local pour une visualisation avec Pandas ou Matplotlib :
-
-```bash
-hdfs dfs -get target_hdfs_output_dir/part-00000 target_output
-```
-
-### 5.2.2 python (pydoop.hdfs)
-
-Pour lire directement les résultats MapReduce depuis HDFS en Python :
-
-```python
-import pydoop.hdfs as hdfs
-
-with hdfs.open('target_hdfs_output_dir/part-00000') as f:
-    contenu = f.read().decode()
-```
-
-Le contenu peut ensuite être parsé ou converti en DataFrame selon le format attendu.
 
 # 6.Récupérer les résultats
 - Expliquez comment récupérer les fichiers de sortie du job MapReduce depuis HDFS pour le mettre sur la partie linux de votre container hadoop-master.
