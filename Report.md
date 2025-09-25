@@ -362,7 +362,12 @@ connection.close()
 
 
 # 6.Récupérer les résultats
-- Expliquez comment récupérer les fichiers de sortie du job MapReduce depuis HDFS pour le mettre sur la partie linux de votre container hadoop-master.
+## 6.1 Récupérer les fichiers depuis le HDFS pour les transferer en local
+La commande pour récuperer les fichiers de sortie du job MapReduce deuips le HDFS pour le mettre dans le container hadoop-master :
+```bash
+hdfs dfs -copyToLocal hdfs_input_file_path output_path
+```
+
 - Donnez la procédure pour récupérer les données du container jusque son pc local.
 
 
