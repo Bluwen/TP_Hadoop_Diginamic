@@ -106,8 +106,133 @@ hdfs dfs -ls target_dir_in_hdfs
 
 # 4. Créer et exécuter un job MapReduce
 - Expliquer la structure d'un job MapReduce (mapper, reducer)
-- Donnez les commandes à exécuter pour soumettre le job sur Hadoop
+assoier une clef/parie de clefs/ selectionner données voulus
+sort : rassembles les mêmes clefs ensembles
 
+## 4.1 Structure d'un job MapReduce
+Un job Mapreduce est composée de plusieurs parties : le mapper, le sorting et le reducer.
+
+### 4.1.1 Le mapper
+C'est un script qui permet de selectionner les données désirées en leur associant des clefs par un système de clef-valeur. La clef peut être composée.
+
+Exemple de script mapper en python :
+```python
+import pandas as pd
+import sys
+import logging
+ 
+logging.basicConfig(filename='debug.log',level=logging.DEBUG)
+logging.debug("Entering mapper.py")
+
+name_column = ["track_name","artist(s)_name","artist_count","released_year","released_month","released_day","in_spotify_playlists","in_spotify_charts","streams","in_apple_playlists","in_apple_charts","in_deezer_playlists","in_deezer_charts","in_shazam_charts","bpm","key","mode","danceability_%","valence_%","energy_%","acousticness_%","instrumentalness_%","liveness_%","speechiness_%","cover_url"]
+df = pd.read_csv(sys.stdin, engine = "python", header = None, names = name_column)
+
+for index, row in df.iterrows():
+   print("%s\t%s\t%s" %(row["danceability_%"], row["energy_%"], row["streams"]))
+```
+Ici trois données sont : danceability_%, energy_% et streams. Les deux premières données nous servirons de clef pour la suite du MapReduce.
+
+### 4.1.2 Le sorting
+C'est l'étape après le mapper qui permet de rassembles les clefs identitiques entre elles.
+
+### 4.1.3 Le reducer
+C'est la dernière étape du MapReduce. Ce script aggrége les données entre elles lorsqu'elles possèdent des clefs identiques. C'est également l'étapes ou des opérations sur les données peuvent être réaliser comme leur soustractions, leur additions ou le calcul de leur moyenne. Enfin il peut être précisé dans le script comment stocker les résultats finaux, par exemple sur une base de données comme HBase.
+
+Exemple de script reducer en python avec sauvgarde des données dans HBase :
+
+#### Connextion au serveur HBase et création de la table dance_energy_stats
+
+```python
+#!/usr/bin/env python3
+import sys
+import happybase
+
+try:
+    connection = happybase.Connection('hadoop-master')
+    tables = connection.tables()
+
+    if b'dance_energy_stats' not in tables:
+        connection.create_table('dance_energy_stats', {'cf': dict()})
+    table = connection.table('dance_energy_stats')
+except Exception as e:
+    print("HBase connection error: {0}".format(e), file=sys.stderr)
+    sys.exit(1)
+```
+#### Récuperation et transformation des données puis sauvgarde dans HBase
+
+```python
+current_danceability = None
+current_energy = None
+total_streams = 0
+total_count = 0
+
+try:
+    for line in sys.stdin:
+        parts = line.strip().split('\t')
+        if len(parts) != 3:
+            continue  # skip malformed lines
+
+        danceability, energy, streams = parts
+        try:
+            streams = int(streams)
+        except ValueError:
+            continue  # skip lines with non-integer stream values
+
+        if (current_danceability == danceability) and (current_energy == energy):
+            total_streams += streams
+            total_count += 1
+        else:
+            if current_danceability is not None and current_energy is not None:
+                row_key = "{}:{}".format(current_danceability, current_energy).encode()
+                table.put(row_key, {
+                    b'cf:total_streams': str(total_streams).encode(),
+                    b'cf:total_count': str(total_count).encode(),
+                    b'cf:mean_streams':str(total_streams/total_count).encode()
+                })
+                print("{0}\t{1}\t{2}\t{3}\t{4}".format(current_danceability, current_energy, total_streams, total_count,total_streams/total_count ))
+
+            current_danceability = danceability
+            current_energy = energy
+            total_streams = streams
+            total_count = 1
+
+    # Final flush
+    if current_danceability is not None and current_energy is not None:
+        row_key = "{}:{}".format(current_danceability, current_energy).encode()
+        table.put(row_key, {
+            b'cf:total_streams': str(total_streams).encode(),
+            b'cf:total_count': str(total_count).encode(),
+            b'cf:mean_streams':str(total_streams/total_count).encode()
+        })
+        print("{0}\t{1}\t{2}\t{3}\t{4}".format(current_danceability, current_energy, total_streams, total_count,total_streams/total_count ))
+
+except Exception as e:
+    print("Processing error: {0}".format(e), file=sys.stderr)
+    sys.exit(1)
+finally:
+    connection.close()
+```
+Ici les données récupérées sont : danceability, energy et streams.\
+Danceability et energy sont utilisées comme paire de clefs dans la table de HBase. Les données de streams sont aditionnées entre elles quand leurs clefs sont identiques et leur moyenne est calculées.\
+Ensuite toutes ces données sont ajoutées dans la table dance_energy_stats dans HBase.\
+Pour finir la connection à la base de données est fermée.
+
+## 4.2 Les commandes à exécuter pour soumettre le job sur Hadoop
+
+Dans un premier temps il faut créer le dossier input qui contiendra les fichiers d'entrées pour le MapReduce :
+```bash
+hdfs dfs -mkdir /user/input
+```
+Ensuite il faut vérifier que le dossier de sortie (output) du MapReduce n'existe pas avant de le créer (car si le dossier existe et contient des données Mapreduce ne voudra pas se lancer)
+```bash
+hdfs dfs --rm -r /user/output
+hdfs dfs -mkdir /user/output
+```
+
+Enfin il reste à lancer la commande pour le MapReduce :
+```bash
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.2.jar -file /root/mapper.py-mapper "python3 mapper.py" -file /root/reducer.py -reducer "python3 reducer.py" -input /user/root/input/Spotify_Most_Streamed_Songs.csv -output /user/root/output/streams
+```
 # 5. Visualiser les résultats
 
 Pour récupéré les résultat et exploiter les données, nous avons plusieurs options:
