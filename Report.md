@@ -1,7 +1,26 @@
 # 1. Connexion à la machine virtuelle
-- Indiquez comment vous vous connectez à la mchine virtuelle avec l'IP, le port le nom d'utilisateur et le mot de passe.
-- Décrivez les étapes pour établir la connexion SSH
 
+## 1.1 Ligne de commande :
+
+Initialisé la connection en entrant la commande.
+
+```bash
+ssh [user_name]@[url/IP] -p [port]
+```
+Puis entrer le mots de pass de l'utilisateur.
+
+![ssh](./ScreenShot/ssh.png)
+
+## 1.2 PuTTY :
+
+Entrer l'url/ip et le port public,
+puis appuyez sur "Open".
+
+![PuTTY](./ScreenShot/putty.png)
+
+Ensuite précisé le nom utilisateur et le mots de passe du compte auquel vous vous connecté.
+
+![PuTTY2](./ScreenShot/putty2.png)
 
 # 2. Lancer les conteneurs et services Hadoop
 - Expliquez les services nécessaires pour Hadoop (HDFS, YARN, Zookeeper, HBase)
