@@ -433,3 +433,10 @@ Par ailleurs, la présence de la barre 50:41 dans le top 5, malgré des niveaux 
 - une donné aberrante(non reproductible),
 - des données incomplètes ou peu fiable
 - ou encore que d’autres caractéristiques influencent le nombre de vues.
+
+
+---
+
+Debart Nathan
+
+Guidoux Bluwen
