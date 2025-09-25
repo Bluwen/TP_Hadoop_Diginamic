@@ -125,6 +125,15 @@ Pour vérifier leur présence :
 ```bash
 hdfs dfs -ls target_hdfs_output_dir
 ```
+![ls output](./ScreenShot/hdfs_output_ls.png)
+
+Pour afficher rapidement les dernières ligne du fichier:
+
+```bash
+hdfs dfs -tail target_hdfs_output_dir/part-00000
+```
+![tail output](./ScreenShot/hdfs_output_tail.png)
+
 
 Pour lire rapidement le contenu :
 
