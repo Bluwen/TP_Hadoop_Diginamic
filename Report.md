@@ -7,6 +7,7 @@ Initialisé la connection en entrant la commande.
 ```bash
 ssh [user_name]@[url/IP] -p [port]
 ```
+
 Puis entrer le mots de pass de l'utilisateur.
 
 ![ssh](./ScreenShot/ssh.png)
@@ -27,60 +28,76 @@ Ensuite précisé le nom utilisateur et le mots de passe du compte auquel vous v
 ## 2.1 Les services Hadoop nécessaires pour notre analyse
 
 ### HDFS ou Hadoop Distributed File System
+
 C'est le système de fichiers distribué de Hadoop, donc sa couche de stockage.
 
 Il a comme caractéristiques principales :
+
 - d'avoir une forte tolérance aux pannes via la redondance des données
 - d'être optimisé pour le traitement rapide de données volumineuses.
 - de permettre le stockage et l'analyse de volumes importants de données via sa scalabilité.
 
 ### YARN ou Yet Another Resource Negotiator
+
 C'est le gestionnaire de ressource de Hadoop.
 
 Il permet à plusieurs application de partager les ressources d'un cluster Hadoop, en assurant une gestion efficace des ressources.
 
-Il est composé de plusieurs élements :
+Il est composé de plusieurs éléments :
+
 - **Ressource Manager** coordonne l'utilisation des ressources du cluster
 - **Node Manager** gère les ressources de chaque noeud individuel
 - **Application Master** dirige l'exécution de chaque application
 
 ### Zookeeper
+
 C'est un service pour la coordination et la gestion notamment ici du cluster HBase.
 
-Il permet de surveiller et gérer l'état des noeuds dans un cluster. Il assure également la communication entre les différents composants et garantit la synchronisation et la cordination des actions dans un cluster. 
+Il permet de surveiller et gérer l'état des noeuds dans un cluster. Il assure également la communication entre les différents composants et garantit la synchronisation et la coordination des actions dans un cluster.
 
 ### HBase
+
 C'est une base de données distribuée, open source, non relationnelle et orienté colonnes. Hbase utilise HDFS comme système de stockage, lui d'écrire et de lire des grands volumes de données.
 
 Il est composé de deux noeuds :
+
 - **Master** qui gère les opérations du cluster et utilise **Zookeeper** pour la coordination
 - **RegionServer** qui héberge les tables HBase et gère les opérations de lecture et d'écriture
 
 ## 2.2 Liste des commandes pour lancer les conteneurs et services Hadoop
+
 ### 2.2.1
 
 Lancer les conteneurs dockers sur la machine distante : 
+
 ```bash
 ./start_docker_digi.sh
 ```
+
 ```bash
 ./bash_hadoop_master.sh
 ```
 
 ### 2.2.2
+
 Pour démarrer les services HDFS et YARN :
+
 ```bash
 ./start-hadoop.sh
 ```
 
 ### 2.2.3
+
 Lancer les services HBase et Zookeeper :
+
 ```bash
 start-hbase.sh
 ```
 
 ### 2.2.4
+
 Enfin pour pouvoir utiliser happybase avec HBase il faut lancer la librarie Thrift:
+
 ```bash
 hbase-deamon.sh start thrift
 ```
@@ -102,20 +119,18 @@ hdfs dfs -ls target_dir_in_hdfs
 
 ![Hdfs put](./ScreenShot/hdfs_put.png)
 
-
-
 # 4. Créer et exécuter un job MapReduce
-- Expliquer la structure d'un job MapReduce (mapper, reducer)
-assoier une clef/parie de clefs/ selectionner données voulus
-sort : rassembles les mêmes clefs ensembles
 
 ## 4.1 Structure d'un job MapReduce
-Un job Mapreduce est composée de plusieurs parties : le mapper, le sorting et le reducer.
+
+Un job MapReduce est composée de plusieurs parties : le mapper, le sorting et le reducer.
 
 ### 4.1.1 Le mapper
-C'est un script qui permet de selectionner les données désirées en leur associant des clefs par un système de clef-valeur. La clef peut être composée.
+
+C'est un script qui permet de sélectionner les données désirées en leur associant des clefs par un système de clef-valeur. La clef peut être composée.
 
 Exemple de script mapper en python :
+
 ```python
 import pandas as pd
 import sys
@@ -130,17 +145,20 @@ df = pd.read_csv(sys.stdin, engine = "python", header = None, names = name_colum
 for index, row in df.iterrows():
    print("%s\t%s\t%s" %(row["danceability_%"], row["energy_%"], row["streams"]))
 ```
+
 Ici trois données sont : danceability_%, energy_% et streams. Les deux premières données nous servirons de clef pour la suite du MapReduce.
 
 ### 4.1.2 Le sorting
-C'est l'étape après le mapper qui permet de rassembles les clefs identitiques entre elles.
+
+C'est l'étape après le mapper qui permet de rassembles les clefs identiques entre elles.
 
 ### 4.1.3 Le reducer
-C'est la dernière étape du MapReduce. Ce script aggrége les données entre elles lorsqu'elles possèdent des clefs identiques. C'est également l'étapes ou des opérations sur les données peuvent être réaliser comme leur soustractions, leur additions ou le calcul de leur moyenne. Enfin il peut être précisé dans le script comment stocker les résultats finaux, par exemple sur une base de données comme HBase.
 
-Exemple de script reducer en python avec sauvgarde des données dans HBase :
+C'est la dernière étape du MapReduce. Ce script agrège les données entre elles lorsqu'elles possèdent des clefs identiques. C'est également l'étapes ou des opérations sur les données peuvent être réaliser comme leur soustractions, leur additions ou le calcul de leur moyenne. Enfin il peut être précisé dans le script comment stocker les résultats finaux, par exemple sur une base de données comme HBase.
 
-#### Connextion au serveur HBase et création de la table dance_energy_stats
+Exemple de script reducer en python avec sauvegarde des données dans HBase :
+
+#### Connexion au serveur HBase et création de la table dance_energy_stats
 
 ```python
 #!/usr/bin/env python3
@@ -158,7 +176,8 @@ except Exception as e:
     print("HBase connection error: {0}".format(e), file=sys.stderr)
     sys.exit(1)
 ```
-#### Récuperation et transformation des données puis sauvgarde dans HBase
+
+#### Recuperation et transformation des données puis sauvegarde dans HBase
 
 ```python
 current_danceability = None
@@ -212,27 +231,33 @@ except Exception as e:
 finally:
     connection.close()
 ```
+
 Ici les données récupérées sont : danceability, energy et streams.\
-Danceability et energy sont utilisées comme paire de clefs dans la table de HBase. Les données de streams sont aditionnées entre elles quand leurs clefs sont identiques et leur moyenne est calculées.\
+Danceability et energy sont utilisées comme paire de clefs dans la table de HBase. Les données de streams sont additionnées entre elles quand leurs clefs sont identiques et leur moyenne est calculées.\
 Ensuite toutes ces données sont ajoutées dans la table dance_energy_stats dans HBase.\
 Pour finir la connection à la base de données est fermée.
 
 ## 4.2 Les commandes à exécuter pour soumettre le job sur Hadoop
 
 Dans un premier temps il faut créer le dossier input qui contiendra les fichiers d'entrées pour le MapReduce :
+
 ```bash
 hdfs dfs -mkdir /user/input
 ```
-Ensuite il faut vérifier que le dossier de sortie (output) du MapReduce n'existe pas avant de le créer (car si le dossier existe et contient des données Mapreduce ne voudra pas se lancer)
+
+Ensuite il faut vérifier que le dossier de sortie (output) du MapReduce n'existe pas avant de le créer (car si le dossier existe et contient des données MapReduce ne voudra pas se lancer)
+
 ```bash
 hdfs dfs --rm -r /user/output
 hdfs dfs -mkdir /user/output
 ```
 
 Enfin il reste à lancer la commande pour le MapReduce :
+
 ```bash
 hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.2.jar -file /root/mapper.py-mapper "python3 mapper.py" -file /root/reducer.py -reducer "python3 reducer.py" -input /user/root/input/Spotify_Most_Streamed_Songs.csv -output /user/root/output/streams
 ```
+
 # 5. Visualiser les résultats
 
 Pour récupéré les résultat et exploiter les données, nous avons plusieurs options:
@@ -250,6 +275,7 @@ Pour vérifier leur présence :
 ```bash
 hdfs dfs -ls target_hdfs_output_dir
 ```
+
 ![ls output](./ScreenShot/hdfs_output_ls.png)
 
 Pour afficher rapidement les dernières ligne du fichier:
@@ -257,8 +283,8 @@ Pour afficher rapidement les dernières ligne du fichier:
 ```bash
 hdfs dfs -tail target_hdfs_output_dir/part-00000
 ```
-![tail output](./ScreenShot/hdfs_output_tail.png)
 
+![tail output](./ScreenShot/hdfs_output_tail.png)
 
 Pour lire rapidement le contenu :
 
@@ -362,24 +388,33 @@ connection.close()
 
 
 # 6.Récupérer les résultats
+
 ## 6.1 Récupérer les fichiers depuis le HDFS pour les transferer en local
-La commande pour récuperer les fichiers de sortie du job MapReduce deuips le HDFS pour le mettre dans le container hadoop-master :
+
+La commande pour récupérer les fichiers de sortie du job MapReduce depuis le HDFS pour le mettre dans le container hadoop-master :
+
 ```bash
 hdfs dfs -copyToLocal hdfs_input_file_path output_path
 ```
 
 - Donnez la procédure pour récupérer les données du container jusque son pc local.
+
 ## 6.1 Procédure pour récupérer les données du container jusque son pc local
-Dans un permier temps, les données que l'on souhaite récuperer doivent être déplacer dans le dossier /datavolume1/ avec la commande suivante :
+
+Dans un premier temps, les données que l'on souhaite récupérer doivent être déplacer dans le dossier /datavolume1/ avec la commande suivante :
+
 ```bash
 mv path_to_data /datavolume1/name_file
 ```
-Ensuite en utilisant filezila il sera possible en cherchant dans l'arborecence du container de trouver le fichier et de le copier vers son pc local.
 
-Le chemin pour retrouver les fichiers déposer dans le /datavolume1/ est : 
-```
+Ensuite en utilisant filezila il sera possible en cherchant dans l’arborescence du container de trouver le fichier et de le copier vers son pc local.
+
+Le chemin pour retrouver les fichiers déposer dans le /datavolume1/ est :
+
+```bash
 /var/lib/docker/volumes/digi01/_data
 ```
+
 Exemple de connexion au serveur distant via filezila.
 ![filezila](./ScreenShot/filezila.png)
 
@@ -395,8 +430,6 @@ Cependant, tirer une conclusion uniquement à partir des données du top 10 sera
 
 Par ailleurs, la présence de la barre 50:41 dans le top 5, malgré des niveaux d’énergie et de caractère dansant globalement plus faibles que ses pairs, pourrait indiquer :
 
-* une donné aberrante(non reproductible),
-
-* des données incomplètes ou peu fiables,
-
-* ou encore que d’autres caractéristiques influencent le nombre de vues.
+- une donné aberrante(non reproductible),
+- des données incomplètes ou peu fiable
+- ou encore que d’autres caractéristiques influencent le nombre de vues.
