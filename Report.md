@@ -240,6 +240,9 @@ connection.close()
 - Expliquez comment récupérer les fichiers de sortie du job MapReduce depuis HDFS pour le mettre sur la partie linux de votre container hadoop-master.
 - Donnez la procédure pour récupérer les données du container jusque son pc local.
 
+
+![filezila](./ScreenShot/filezila.png)
+
 # 7. Analyse des résultat.
 
 ![top 10 stream](./ScreenShot/top_10_stream.png)
