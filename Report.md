@@ -250,6 +250,15 @@ Pour vérifier leur présence :
 ```bash
 hdfs dfs -ls target_hdfs_output_dir
 ```
+![ls output](./ScreenShot/hdfs_output_ls.png)
+
+Pour afficher rapidement les dernières ligne du fichier:
+
+```bash
+hdfs dfs -tail target_hdfs_output_dir/part-00000
+```
+![tail output](./ScreenShot/hdfs_output_tail.png)
+
 
 Pour lire rapidement le contenu :
 
@@ -355,3 +364,21 @@ connection.close()
 # 6.Récupérer les résultats
 - Expliquez comment récupérer les fichiers de sortie du job MapReduce depuis HDFS pour le mettre sur la partie linux de votre container hadoop-master.
 - Donnez la procédure pour récupérer les données du container jusque son pc local.
+
+# 7. Analyse des résultat.
+
+![top 10 stream](./ScreenShot/top_10_stream.png)
+
+Pour la grande majorité du top 10, on observe une énergie et/ou une caractéristique dansante élevées.
+
+Cela pourrait indiquer une relation potentielle entre ces caractéristiques et le nombre moyen de vues par œuvre.
+
+Cependant, tirer une conclusion uniquement à partir des données du top 10 serait prématuré. Une analyse plus approfondie, basée sur un ensemble de données plus large, serait à envisager.
+
+Par ailleurs, la présence de la barre 50:41 dans le top 5, malgré des niveaux d’énergie et de caractère dansant globalement plus faibles que ses pairs, pourrait indiquer :
+
+* une donné aberrante(non reproductible),
+
+* des données incomplètes ou peu fiables,
+
+* ou encore que d’autres caractéristiques influencent le nombre de vues.
