@@ -28,8 +28,23 @@ Ensuite précisé le nom utilisateur et le mots de passe du compte auquel vous v
 
 
 # 3. Importer les données dans HDFS
-- Décrivez la manière dont vous allez importer les données pour qu'elles puissent être traitées avec MapReduce.
-- Précisez où stocker les fichiers
+
+Pour traiter des données avec MapReduce, il faut d’abord les importé dans le hdfs.
+Pour ce faire, il faut exécuter la commande:
+
+```bash
+hdfs dfs -put path_to_data target_dir_in_hdfs
+```
+
+Vous pouvez ensuite afficher le dossier cible avec:
+```bash
+hdfs dfs -ls target_dir_in_hdfs
+```
+
+
+![Hdfs put](./ScreenShot/hdfs_put.png)
+
+
 
 # 4. Créer et exécuter un job MapReduce
 - Expliquer la structure d'un job MapReduce (mapper, reducer)
