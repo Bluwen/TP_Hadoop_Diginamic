@@ -12,4 +12,4 @@ name_column = ["track_name","artist(s)_name","artist_count","released_year","rel
 df = pd.read_csv(sys.stdin, engine = "python", header = None, names = name_column)
 
 for index, row in df.iterrows():
-   print("%s\t%s\t\%i" %(row["danceability_%"], row["energy_%"], row["streams"]))
+   print("%s\t%s\t\%s" %(row["danceability_%"], row["energy_%"], row["streams"]))
