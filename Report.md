@@ -369,8 +369,18 @@ hdfs dfs -copyToLocal hdfs_input_file_path output_path
 ```
 
 - Donnez la procédure pour récupérer les données du container jusque son pc local.
+## 6.1 Procédure pour récupérer les données du container jusque son pc local
+Dans un permier temps, les données que l'on souhaite récuperer doivent être déplacer dans le dossier /datavolume1/ avec la commande suivante :
+```bash
+mv path_to_data /datavolume1/name_file
+```
+Ensuite en utilisant filezila il sera possible en cherchant dans l'arborecence du container de trouver le fichier et de le copier vers son pc local.
 
-
+Le chemin pour retrouver les fichiers déposer dans le /datavolume1/ est : 
+```
+/var/lib/docker/volumes/digi01/_data
+```
+Exemple de connexion au serveur distant via filezila.
 ![filezila](./ScreenShot/filezila.png)
 
 # 7. Analyse des résultat.
